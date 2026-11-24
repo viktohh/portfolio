@@ -86,7 +86,7 @@ export const projects: Project[] = [
       'Python pipeline that ingests ASAv syslog, NetFlow, and SNMP traps, enriches events via the AbuseIPDB REST API, and drives automated alerting and incident triage.',
     tags: ['Python', 'Cisco ASAv', 'NetFlow', 'SNMP', 'Syslog', 'AbuseIPDB', 'n8n'],
     links: [
-      { label: 'GitHub', href: 'https://github.com/viktohh/Network_ai_detectection' },
+      { label: 'GitHub', href: 'https://github.com/viktohh/Network_ai_detection' },
       { label: 'Case study', href: '/projects/healthcare-iot-network/' },
     ],
   },

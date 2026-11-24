@@ -174,7 +174,7 @@ export const nodes: NetNode[] = [
       summary: 'My Python pipeline enriches suspicious IPs with threat intel (AbuseIPDB) and raises alerts automatically, so incidents arrive already triaged.',
       skills: ['Python', 'REST APIs', 'AbuseIPDB', 'Automation'],
       proof: [
-        { text: 'Project: On-Premises SOAR Pipeline (GitHub)', href: 'https://github.com/viktohh/Network_ai_detectection' },
+        { text: 'Project: On-Premises SOAR Pipeline (GitHub)', href: 'https://github.com/viktohh/Network_ai_detection' },
         { text: 'Case study: NetFlow + syslog feeding an AI triage pipeline', href: '/projects/healthcare-iot-network/' },
       ],
     },
