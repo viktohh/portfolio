@@ -1,0 +1,644 @@
+---
+import { nodes, links, zones, scenarios, type IconKind } from '../data/network';
+
+const NODE_W = 176;
+const NODE_H = 58;
+
+const icons: Record<IconKind, string> = {
+  cloud: '<path d="M7 18h10a4 4 0 0 0 .5-7.97A6 6 0 0 0 6.1 9.6 4.2 4.2 0 0 0 7 18z"/>',
+  globe: '<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/>',
+  laptop: '<rect x="4" y="5" width="16" height="11" rx="1"/><path d="M2 19h20"/>',
+  key: '<circle cx="8" cy="15" r="4"/><path d="M11 12l8-8M16 7l2 2M14 9l2 2"/>',
+  shield: '<path d="M12 3l8 3v6c0 4.5-3.4 8.2-8 9-4.6-.8-8-4.5-8-9V6z"/><path d="M9 12l2 2 4-4"/>',
+  switch: '<rect x="3" y="8" width="18" height="8" rx="1.5"/><path d="M7 12h.01M10 12h.01M13 12h.01M16.5 12h1"/>',
+  users: '<circle cx="9" cy="8" r="3.2"/><path d="M3 19c0-3.3 2.7-5.5 6-5.5s6 2.2 6 5.5M16 5.2a3 3 0 0 1 0 5.6M18 13.8c1.8.6 3 2.4 3 5.2"/>',
+  lock: '<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/>',
+  directory: '<ellipse cx="12" cy="6" rx="7" ry="3"/><path d="M5 6v12c0 1.7 3.1 3 7 3s7-1.3 7-3V6M5 12c0 1.7 3.1 3 7 3s7-1.3 7-3"/>',
+  router: '<circle cx="12" cy="12" r="9"/><path d="M9 8l3-3 3 3M15 16l-3 3-3-3M12 5v14"/>',
+  chart: '<path d="M5 20V11M12 20V5M19 20v-6M3 20h18"/>',
+  bolt: '<path d="M13 2L4 14h7l-1 8 9-12h-7z"/>',
+};
+
+const byId = Object.fromEntries(nodes.map((n) => [n.id, n]));
+const linkGeo = links.map((l) => {
+  const a = byId[l.a];
+  const b = byId[l.b];
+  const mx = (a.x + b.x) / 2;
+  const my = (a.y + b.y) / 2;
+  const lw = l.label.length * 6.3 + 14;
+  return { ...l, x1: a.x, y1: a.y, x2: b.x, y2: b.y, mx, my, lw };
+});
+---
+
+<div class="net" data-net>
+  <div class="scenarios" role="group" aria-label="Play a traffic scenario">
+    <span class="scenarios-label">Play a scenario:</span>
+    {scenarios.map((s, i) => (
+      <button type="button" class="chip" data-scenario={i} aria-pressed="false">▶ {s.title}</button>
+    ))}
+  </div>
+
+  <div class="canvas-wrap">
+    <svg class="canvas" viewBox="0 0 1080 620" role="group" aria-label="Interactive network topology. Select a device to see related skills.">
+      <defs>
+        <pattern id="net-grid" width="20" height="20" patternUnits="userSpaceOnUse">
+          <circle cx="1" cy="1" r="1" class="grid-dot" />
+        </pattern>
+      </defs>
+      <rect width="1080" height="620" fill="url(#net-grid)" />
+
+      {zones.map((z) => (
+        <g class="zone">
+          <rect x={z.x} y={z.y} width={z.w} height={z.h} rx="14" />
+          <text x={z.align === 'end' ? z.x + z.w - 14 : z.x + 14} y={z.y + 18} text-anchor={z.align === 'end' ? 'end' : 'start'}>{z.label}</text>
+        </g>
+      ))}
+
+      <g class="links">
+        {linkGeo.map((l) => (
+          <g class="link" data-a={l.a} data-b={l.b}>
+            <line class="link-base" x1={l.x1} y1={l.y1} x2={l.x2} y2={l.y2} />
+            <line class="link-flow" x1={l.x1} y1={l.y1} x2={l.x2} y2={l.y2} />
+          </g>
+        ))}
+      </g>
+
+      <g class="link-labels" aria-hidden="true">
+        {linkGeo.map((l) => (
+          <g class="link-label" data-a={l.a} data-b={l.b}>
+            <rect x={l.mx - l.lw / 2} y={l.my - 10} width={l.lw} height="20" rx="10" />
+            <text x={l.mx} y={l.my + 3.5}>{l.label}</text>
+          </g>
+        ))}
+      </g>
+
+      <g class="nodes">
+        {nodes.map((n) => (
+          <g
+            class="node"
+            data-node={n.id}
+            transform={`translate(${n.x - NODE_W / 2} ${n.y - NODE_H / 2})`}
+            tabindex="0"
+            role="button"
+            aria-label={`${n.label}, ${n.sub}. Show details`}
+          >
+            <rect class="node-box" width={NODE_W} height={NODE_H} rx="10" />
+            <rect class="node-icon-bg" x="11" y="13" width="32" height="32" rx="8" />
+            <g class="node-icon" transform="translate(15 17)" set:html={icons[n.icon]} />
+            <text class="node-label" x="54" y="26">{n.label}</text>
+            <text class="node-sub" x="54" y="43">{n.sub}</text>
+          </g>
+        ))}
+      </g>
+    </svg>
+  </div>
+  <p class="scroll-hint" aria-hidden="true">← Scroll to explore the diagram →</p>
+
+  <div class="panel" aria-live="polite">
+    <div class="panel-intro" data-panel="intro">
+      <p><strong>Click any device</strong> to see what I've built with it, or <strong>play a scenario</strong> to watch traffic move through the network.</p>
+    </div>
+
+    <div class="panel-scenario" data-panel="scenario" hidden>
+      <div class="scenario-head">
+        <strong data-scenario-title></strong>
+        <span class="step-count" data-step-count></span>
+      </div>
+      <p data-step-text></p>
+      <div class="scenario-controls">
+        <button type="button" class="ctl" data-ctl="prev" aria-label="Previous step">← Prev</button>
+        <button type="button" class="ctl" data-ctl="play" aria-label="Pause">Pause</button>
+        <button type="button" class="ctl" data-ctl="next" aria-label="Next step">Next →</button>
+        <button type="button" class="ctl ghost" data-ctl="close" aria-label="Close scenario">✕</button>
+      </div>
+    </div>
+
+    {nodes.map((n) => (
+      <div class="panel-detail" data-panel={`node-${n.id}`} hidden>
+        <div class="detail-head">
+          <div>
+            <h3>{n.label}</h3>
+            <p class="detail-sub">{n.sub}</p>
+          </div>
+          <button type="button" class="ctl ghost" data-ctl="close" aria-label="Close details">✕</button>
+        </div>
+        <p>{n.detail.summary}</p>
+        <ul class="detail-tags">
+          {n.detail.skills.map((s) => <li class="tag">{s}</li>)}
+        </ul>
+        <p class="proof-title">Where I've done this</p>
+        <ul class="proof">
+          {n.detail.proof.map((p) => (
+            <li>
+              {!p.href && p.text}
+              {p.href?.startsWith('http') && <a href={p.href} target="_blank" rel="noopener">{p.text} ↗</a>}
+              {p.href?.startsWith('/') && <a href={p.href}>{p.text} →</a>}
+            </li>
+          ))}
+        </ul>
+      </div>
+    ))}
+  </div>
+
+  <script type="application/json" data-scenarios set:html={JSON.stringify(scenarios)} />
+</div>
+
+<script>
+  type Step = { text: string; nodes: string[]; links: [string, string][] };
+  type Scenario = { id: string; title: string; steps: Step[] };
+
+  const STEP_MS = 3200;
+
+  document.querySelectorAll<HTMLElement>('[data-net]').forEach((root) => {
+    const svg = root.querySelector('svg')!;
+    const scenarios: Scenario[] = JSON.parse(root.querySelector('[data-scenarios]')!.textContent || '[]');
+    const nodeEls = new Map<string, SVGGElement>();
+    root.querySelectorAll<SVGGElement>('[data-node]').forEach((el) => nodeEls.set(el.dataset.node!, el));
+    const linkEls = [...root.querySelectorAll<SVGGElement>('.link')];
+    const labelEls = [...root.querySelectorAll<SVGGElement>('.link-label')];
+    const panels = [...root.querySelectorAll<HTMLElement>('[data-panel]')];
+    const chips = [...root.querySelectorAll<HTMLButtonElement>('[data-scenario]')];
+    const playBtn = root.querySelector<HTMLButtonElement>('[data-ctl="play"]')!;
+    const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    let selected: string | null = null;
+    let current: number | null = null;
+    let step = 0;
+    let timer: number | undefined;
+    let playing = false;
+
+    const findLink = (a: string, b: string) =>
+      linkEls.find((l) => (l.dataset.a === a && l.dataset.b === b) || (l.dataset.a === b && l.dataset.b === a));
+    const findLabel = (a: string, b: string) =>
+      labelEls.find((l) => (l.dataset.a === a && l.dataset.b === b) || (l.dataset.a === b && l.dataset.b === a));
+
+    function clearHighlight() {
+      svg.classList.remove('has-focus');
+      nodeEls.forEach((el) => el.classList.remove('focus'));
+      linkEls.forEach((el) => el.classList.remove('lit', 'fwd', 'rev'));
+      labelEls.forEach((el) => el.classList.remove('lit'));
+    }
+
+    function highlightNode(id: string) {
+      clearHighlight();
+      svg.classList.add('has-focus');
+      nodeEls.get(id)?.classList.add('focus');
+      linkEls.forEach((l, i) => {
+        if (l.dataset.a === id || l.dataset.b === id) {
+          l.classList.add('lit');
+          labelEls[i].classList.add('lit');
+          nodeEls.get(l.dataset.a === id ? l.dataset.b! : l.dataset.a!)?.classList.add('focus');
+        }
+      });
+    }
+
+    function showPanel(name: string) {
+      panels.forEach((p) => (p.hidden = p.dataset.panel !== name));
+    }
+
+    function selectNode(id: string | null) {
+      stopScenario(false);
+      nodeEls.forEach((el, key) => el.classList.toggle('selected', key === id));
+      selected = id;
+      if (id) {
+        highlightNode(id);
+        showPanel(`node-${id}`);
+      } else {
+        clearHighlight();
+        showPanel('intro');
+      }
+    }
+
+    // On narrow screens the diagram scrolls sideways; keep the active devices in view.
+    const wrap = root.querySelector<HTMLElement>('.canvas-wrap')!;
+    const viewBoxWidth = svg.viewBox.baseVal.width;
+    function scrollIntoFocus(ids: string[]) {
+      if (wrap.scrollWidth <= wrap.clientWidth || ids.length === 0) return;
+      const xs = ids.map((id) => {
+        const m = nodeEls.get(id)?.getAttribute('transform')?.match(/translate\(([\d.]+)/);
+        return m ? parseFloat(m[1]) + 88 : 0;
+      });
+      const center = ((Math.min(...xs) + Math.max(...xs)) / 2) * (svg.clientWidth / viewBoxWidth);
+      wrap.scrollTo({ left: center - wrap.clientWidth / 2, behavior: reduceMotion ? 'auto' : 'smooth' });
+    }
+
+    function renderStep() {
+      if (current === null) return;
+      const sc = scenarios[current];
+      const s = sc.steps[step];
+      clearHighlight();
+      svg.classList.add('has-focus');
+      s.nodes.forEach((id) => nodeEls.get(id)?.classList.add('focus'));
+      s.links.forEach(([from, to]) => {
+        const l = findLink(from, to);
+        if (!l) return;
+        l.classList.add('lit', l.dataset.a === from ? 'fwd' : 'rev');
+        findLabel(from, to)?.classList.add('lit');
+      });
+      scrollIntoFocus(s.nodes);
+      root.querySelector('[data-scenario-title]')!.textContent = sc.title;
+      root.querySelector('[data-step-count]')!.textContent = `Step ${step + 1} of ${sc.steps.length}`;
+      root.querySelector('[data-step-text]')!.textContent = s.text;
+    }
+
+    function schedule() {
+      window.clearTimeout(timer);
+      if (!playing || current === null) return;
+      timer = window.setTimeout(() => {
+        const sc = scenarios[current!];
+        if (step < sc.steps.length - 1) {
+          step++;
+          renderStep();
+          schedule();
+        } else {
+          setPlaying(false);
+        }
+      }, STEP_MS);
+    }
+
+    function setPlaying(on: boolean) {
+      playing = on;
+      playBtn.textContent = on ? 'Pause' : 'Play';
+      playBtn.setAttribute('aria-label', on ? 'Pause' : 'Play');
+      schedule();
+    }
+
+    function startScenario(i: number) {
+      nodeEls.forEach((el) => el.classList.remove('selected'));
+      selected = null;
+      current = i;
+      step = 0;
+      chips.forEach((c, j) => c.setAttribute('aria-pressed', String(j === i)));
+      showPanel('scenario');
+      renderStep();
+      setPlaying(!reduceMotion);
+    }
+
+    function stopScenario(resetPanel = true) {
+      window.clearTimeout(timer);
+      playing = false;
+      current = null;
+      chips.forEach((c) => c.setAttribute('aria-pressed', 'false'));
+      if (resetPanel) {
+        clearHighlight();
+        showPanel('intro');
+      }
+    }
+
+    // Node interactions
+    nodeEls.forEach((el, id) => {
+      el.addEventListener('click', () => selectNode(selected === id ? null : id));
+      el.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          selectNode(selected === id ? null : id);
+        }
+      });
+      el.addEventListener('mouseenter', () => {
+        if (current === null) highlightNode(id);
+      });
+      el.addEventListener('mouseleave', () => {
+        if (current !== null) return;
+        if (selected) highlightNode(selected);
+        else clearHighlight();
+      });
+    });
+
+    // Scenario controls
+    chips.forEach((c, i) => c.addEventListener('click', () => startScenario(i)));
+    root.querySelector('[data-ctl="next"]')!.addEventListener('click', () => {
+      if (current === null) return;
+      step = Math.min(step + 1, scenarios[current].steps.length - 1);
+      renderStep();
+      setPlaying(false);
+    });
+    root.querySelector('[data-ctl="prev"]')!.addEventListener('click', () => {
+      if (current === null) return;
+      step = Math.max(step - 1, 0);
+      renderStep();
+      setPlaying(false);
+    });
+    playBtn.addEventListener('click', () => {
+      if (current === null) return;
+      if (!playing && step === scenarios[current].steps.length - 1) {
+        step = 0;
+        renderStep();
+      }
+      setPlaying(!playing);
+    });
+    root.querySelectorAll('[data-ctl="close"]').forEach((b) =>
+      b.addEventListener('click', () => {
+        stopScenario();
+        selectNode(null);
+      }),
+    );
+    root.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        stopScenario();
+        selectNode(null);
+      }
+    });
+  });
+</script>
+
+<style>
+  .net {
+    --node-fill: var(--surface);
+  }
+
+  .scenarios {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+  }
+  .scenarios-label {
+    font-size: 0.85rem;
+    color: var(--muted);
+    margin-right: 0.25rem;
+  }
+  .chip {
+    font: inherit;
+    font-size: 0.85rem;
+    padding: 0.35rem 0.8rem;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s, color 0.15s;
+  }
+  .chip:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+  .chip[aria-pressed='true'] {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+  }
+  :global([data-theme='dark']) .chip[aria-pressed='true'] {
+    color: #0b1020;
+  }
+
+  .canvas-wrap {
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    background: var(--bg);
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .canvas {
+    display: block;
+    width: 100%;
+    min-width: 820px;
+    height: auto;
+  }
+  .scroll-hint {
+    display: none;
+    text-align: center;
+    font-size: 0.8rem;
+    color: var(--muted);
+    margin: 0.5rem 0 0;
+  }
+  @media (max-width: 800px) {
+    .scroll-hint {
+      display: block;
+    }
+  }
+
+  .grid-dot {
+    fill: var(--border);
+  }
+
+  .zone rect {
+    fill: none;
+    stroke: var(--border);
+    stroke-width: 1.5;
+    stroke-dasharray: 6 5;
+  }
+  .zone text {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    fill: var(--muted);
+  }
+
+  .link-base {
+    stroke: var(--border);
+    stroke-width: 2;
+    transition: stroke 0.2s, opacity 0.2s;
+  }
+  :global([data-theme='dark']) .link-base {
+    stroke: #3a3d43;
+  }
+  .link-flow {
+    stroke: var(--accent);
+    stroke-width: 2.5;
+    stroke-linecap: round;
+    stroke-dasharray: 2 10;
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+  .link.lit .link-base {
+    stroke: var(--accent);
+    opacity: 0.35;
+  }
+  .link.lit .link-flow {
+    opacity: 1;
+    stroke-dasharray: none;
+  }
+  .link.fwd .link-flow,
+  .link.rev .link-flow {
+    stroke-width: 3.5;
+    stroke-dasharray: 3 9;
+    animation: flow 0.6s linear infinite;
+  }
+  .link.rev .link-flow {
+    animation-direction: reverse;
+  }
+  @keyframes flow {
+    to {
+      stroke-dashoffset: -12;
+    }
+  }
+
+  .link-label rect {
+    fill: var(--bg);
+    stroke: var(--border);
+  }
+  .link-label text {
+    font-family: var(--mono);
+    font-size: 10.5px;
+    fill: var(--muted);
+    text-anchor: middle;
+  }
+  .link-label.lit rect {
+    fill: var(--accent-soft);
+    stroke: var(--accent);
+  }
+  .link-label.lit text {
+    fill: var(--accent);
+  }
+
+  .node {
+    cursor: pointer;
+    outline: none;
+  }
+  .node-box {
+    fill: var(--node-fill);
+    stroke: var(--border);
+    stroke-width: 1.5;
+    transition: stroke 0.15s, fill 0.15s;
+  }
+  .node-icon-bg {
+    fill: var(--accent-soft);
+  }
+  .node-icon {
+    fill: none;
+    stroke: var(--accent);
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .node-label {
+    font-family: var(--sans);
+    font-size: 13.5px;
+    font-weight: 600;
+    fill: var(--text);
+  }
+  .node-sub {
+    font-family: var(--mono);
+    font-size: 10.5px;
+    fill: var(--muted);
+  }
+  .node:hover .node-box,
+  .node:focus-visible .node-box,
+  .node.focus .node-box {
+    stroke: var(--accent);
+  }
+  .node:focus-visible .node-box {
+    stroke-width: 2.5;
+  }
+  .node.selected .node-box {
+    stroke: var(--accent);
+    stroke-width: 2.5;
+    fill: var(--accent-soft);
+  }
+
+  /* Dim everything that isn't part of the current focus */
+  .node,
+  .link,
+  .link-label {
+    transition: opacity 0.2s;
+  }
+  .has-focus .node:not(.focus):not(.selected),
+  .has-focus .link:not(.lit),
+  .has-focus .link-label:not(.lit) {
+    opacity: 0.3;
+  }
+
+  /* Panel */
+  .panel {
+    margin-top: 1rem;
+    padding: 1.25rem 1.35rem;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    background: var(--surface);
+    min-height: 9.5rem;
+  }
+  .panel p {
+    margin: 0 0 0.75rem;
+    font-size: 0.97rem;
+  }
+  .panel-intro p {
+    margin: 0;
+    color: var(--muted);
+  }
+  .panel-intro strong {
+    color: var(--text);
+  }
+  .scenario-head,
+  .detail-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 1rem;
+    margin-bottom: 0.6rem;
+  }
+  .step-count {
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    color: var(--accent);
+  }
+  .scenario-controls {
+    display: flex;
+    gap: 0.5rem;
+  }
+  .ctl {
+    font: inherit;
+    font-size: 0.85rem;
+    padding: 0.35rem 0.75rem;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    color: var(--text);
+    cursor: pointer;
+  }
+  .ctl:hover {
+    border-color: var(--muted);
+  }
+  .ctl.ghost {
+    margin-left: auto;
+    border-color: transparent;
+    background: transparent;
+    color: var(--muted);
+  }
+  .detail-head .ctl.ghost {
+    margin-left: 0;
+  }
+  .detail-head h3 {
+    font-size: 1.1rem;
+  }
+  .detail-sub {
+    font-family: var(--mono);
+    font-size: 0.8rem !important;
+    color: var(--muted);
+    margin: 0.1rem 0 0 !important;
+  }
+  .detail-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    list-style: none;
+    margin-bottom: 1rem;
+  }
+  .proof-title {
+    font-family: var(--mono);
+    font-size: 0.75rem !important;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 0.4rem !important;
+  }
+  .proof {
+    padding-left: 1.1rem;
+    font-size: 0.93rem;
+  }
+  .proof li {
+    margin-bottom: 0.25rem;
+  }
+  .proof li::marker {
+    color: var(--accent);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .link.fwd .link-flow,
+    .link.rev .link-flow {
+      animation: none;
+      stroke-dasharray: none;
+    }
+  }
+</style>

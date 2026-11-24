@@ -1,0 +1,37 @@
+---
+import Base from '../layouts/Base.astro';
+import { profile } from '../data/site';
+---
+
+<Base title={`Page not found — ${profile.name}`} noindex>
+  <main id="main" class="container nf">
+    <p class="code">404 · destination unreachable</p>
+    <h1>This route doesn't exist.</h1>
+    <p class="muted">The packet was dropped. No matching route for this address.</p>
+    <a class="home" href="/">← Back to the home page</a>
+  </main>
+</Base>
+
+<style>
+  .nf {
+    min-height: 80vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  .code {
+    font-family: var(--mono);
+    font-size: 0.85rem;
+    color: var(--accent);
+    margin-bottom: 1rem;
+  }
+  h1 {
+    font-size: clamp(2rem, 6vw, 2.75rem);
+    letter-spacing: -0.02em;
+    margin-bottom: 1rem;
+  }
+  .home {
+    margin-top: 1rem;
+    font-weight: 500;
+  }
+</style>

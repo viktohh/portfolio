@@ -1,0 +1,453 @@
+---
+import Base from '../../layouts/Base.astro';
+import Header from '../../components/Header.astro';
+import TopologyBackdrop from '../../components/TopologyBackdrop.astro';
+import { profile } from '../../data/site';
+
+const img = (f: string) => `/projects/healthcare-iot/${f}`;
+const linkedinPost =
+  'https://www.linkedin.com/posts/viktohtimmy_cybersecurity-networksecurity-hipaa-ugcPost-7450289503421857792-9eWX/';
+
+const facts = [
+  { k: 'Role', v: 'Co-researcher & presenter' },
+  { k: 'Team', v: 'With Saheed Abiodun Adebayo · Mentor: Maria Weber' },
+  { k: 'Where', v: 'Saint Louis University · CCSC Central Plains, Apr 2026' },
+  { k: 'Stack', v: 'EVE-NG on Proxmox · Cisco ASAv & IOS · FreeRADIUS · NetFlow v9 · ntop · syslog · n8n' },
+];
+
+const zones = [
+  { name: 'User LAN', subnet: '10.10.10.0/24', why: 'Staff workstations — no direct path to patient data' },
+  { name: 'EHR App zone', subnet: '10.10.20.0/24', why: 'Electronic health record application servers' },
+  { name: 'PHI DB zone', subnet: '10.10.30.0/24', why: 'Protected health information — the crown jewels, most restricted' },
+  { name: 'Management zone', subnet: '10.10.40.0/24', why: 'Device administration, reachable only by admins' },
+  { name: 'Guest zone', subnet: '10.10.50.0/24', why: 'Internet-only access for visitors' },
+  { name: 'IoT zone', subnet: 'Dedicated VLAN', why: 'Cameras, sensors, medical devices, wearables — isolated by default' },
+];
+
+const killChain = ['Initial access', 'Enumeration', 'Lateral movement', 'Privilege escalation', 'Full compromise'];
+
+const continuum = [
+  {
+    phase: 'Before',
+    title: 'Make the network hostile to attackers',
+    points: [
+      'VLAN segmentation to contain lateral movement',
+      'ACLs enforcing least-privilege access between zones',
+      'IKEv2 site-to-site VPNs between sites',
+      'FreeRADIUS for AAA — an open-source alternative to Cisco ISE',
+    ],
+  },
+  {
+    phase: 'During',
+    title: 'Never lose visibility',
+    points: [
+      'NetFlow v9 for traffic analysis',
+      'Centralized syslog so nothing goes undetected',
+      'Logs fed into an AI pipeline that interprets and triages alerts automatically',
+    ],
+  },
+  {
+    phase: 'After',
+    title: 'Keep the forensic trail',
+    points: [
+      'Flow and log data show what happened and what was touched',
+      'Evidence to close the gap and harden the design',
+    ],
+  },
+];
+
+const findings = [
+  'IoT devices are major attack entry points.',
+  'Network segmentation alone is not enough against sophisticated threats.',
+  'Continuous visibility and real-time monitoring are the most critical controls for detecting and mitigating attacks.',
+  'A Zero Trust model significantly strengthens access control and reduces the risk of unauthorized compromise.',
+  'A well-implemented layered defense prevents large-scale breaches and system-wide compromise.',
+];
+---
+
+<Base
+  title={`Securing IoT in a Multi-Site Healthcare Network — ${profile.name}`}
+  description="Case study: a HIPAA-themed multi-site healthcare network built in EVE-NG, with segmentation, IKEv2 VPNs, AAA, and NetFlow/syslog feeding an AI triage pipeline."
+>
+  <Header />
+  <main id="main">
+    <div class="hero-wrap">
+      <TopologyBackdrop variant="subtle" />
+      <div class="container hero">
+        <a class="back" href="/#projects">← All projects</a>
+        <p class="eyebrow">Case study · Presented at CCSC Central Plains 2026</p>
+        <h1>Securing IoT devices in a multi-site healthcare network</h1>
+        <p class="lead">
+          We built a three-site hospital network in EVE-NG and treated HIPAA as a real design constraint, not a
+          checkbox — then structured every control around the attack continuum: <em>before</em>, <em>during</em>, and <em>after</em> an attack.
+        </p>
+        <dl class="facts">
+          {facts.map((f) => (
+            <div><dt>{f.k}</dt><dd>{f.v}</dd></div>
+          ))}
+        </dl>
+        <div class="links">
+          <a href={linkedinPost} target="_blank" rel="noopener">LinkedIn post ↗</a>
+          <a href="https://github.com/viktohh/Network_ai_detectection" target="_blank" rel="noopener">AI triage pipeline on GitHub ↗</a>
+        </div>
+      </div>
+    </div>
+
+    <section>
+      <div class="container wide">
+        <div class="duo">
+          <figure>
+            <a href={img('presenting.jpg')} target="_blank" rel="noopener">
+              <img src={img('presenting.jpg')} width="1152" height="1536" alt="Victor presenting the research poster at CCSC Central Plains" loading="lazy" />
+            </a>
+            <figcaption>Presenting at CCSC Central Plains, April 2026.</figcaption>
+          </figure>
+          <figure>
+            <a href={img('poster.jpg')} target="_blank" rel="noopener">
+              <img src={img('poster.jpg')} width="800" height="405" alt="Research poster: Securing Internet of Things (IoT) Devices in Enterprise Networks" loading="lazy" />
+            </a>
+            <figcaption>The research poster — background, enterprise topology, attack chain, and findings.</figcaption>
+          </figure>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="container">
+        <h2 class="section-title">The problem</h2>
+        <p>
+          IoT devices are frequently unmanaged, vulnerable, and poorly monitored — weak authentication, limited patching,
+          and flat networks make them easy entry points into an enterprise. In a hospital, that path can end at patient data.
+        </p>
+        <p>Our objectives were to <strong>simulate IoT-based attack vectors</strong> and <strong>evaluate how layered, risk-based security controls can stop an intrusion before it becomes a full compromise.</strong></p>
+        <p class="sub-title">The attack chain we designed against</p>
+        <ol class="chain">
+          {killChain.map((step, i) => <li><span>{i + 1}</span>{step}</li>)}
+        </ol>
+      </div>
+    </section>
+
+    <section>
+      <div class="container">
+        <h2 class="section-title">The design</h2>
+        <p>
+          The network spans HQ, a branch site, and a remote clinician site, joined by IKEv2 site-to-site VPNs. At HQ, an ASA firewall
+          and an L3 core switch split the hospital into zones by sensitivity, so a compromised camera can't reach a records database.
+        </p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th scope="col">Zone</th><th scope="col">Subnet</th><th scope="col">Purpose</th></tr></thead>
+            <tbody>
+              {zones.map((z) => (
+                <tr><td>{z.name}</td><td class="mono">{z.subnet}</td><td>{z.why}</td></tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <figure class="wide-fig">
+          <a href={img('eve-topology.jpg')} target="_blank" rel="noopener">
+            <img src={img('eve-topology.jpg')} width="800" height="225" alt="The lab topology running in EVE-NG" loading="lazy" />
+          </a>
+          <figcaption>The lab running in EVE-NG: HQ core and zones, branch, remote clinician site, ISP, and an attacker node.</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section>
+      <div class="container wide">
+        <h2 class="section-title">Controls across the attack continuum</h2>
+        <div class="continuum">
+          {continuum.map((c) => (
+            <article>
+              <p class="phase">{c.phase} the attack</p>
+              <h3>{c.title}</h3>
+              <ul>{c.points.map((pt) => <li>{pt}</li>)}</ul>
+            </article>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="container">
+        <h2 class="section-title">From the lab</h2>
+        <figure class="wide-fig">
+          <a href={img('asa-ikev2.png')} target="_blank" rel="noopener">
+            <img src={img('asa-ikev2.png')} width="800" height="152" alt="ASA show crypto ikev2 sa output showing an active tunnel" loading="lazy" />
+          </a>
+          <figcaption><code>show crypto ikev2 sa</code> on the HQ ASA: tunnel up, AES-CBC-256, SHA-256, DH group 14.</figcaption>
+        </figure>
+        <div class="duo even">
+          <figure>
+            <a href={img('ntop-netflow.jpg')} target="_blank" rel="noopener">
+              <img src={img('ntop-netflow.jpg')} width="800" height="388" alt="ntop dashboard showing top flow talkers from NetFlow data" loading="lazy" />
+            </a>
+            <figcaption>NetFlow v9 in ntop — top talkers across the network.</figcaption>
+          </figure>
+          <figure>
+            <a href={img('n8n-triage.jpg')} target="_blank" rel="noopener">
+              <img src={img('n8n-triage.jpg')} width="800" height="247" alt="n8n workflow: webhook to LLM chain to Discord alert" loading="lazy" />
+            </a>
+            <figcaption>AI triage in n8n: logs arrive by webhook, an LLM interprets them, and the summary is posted as an alert.</figcaption>
+          </figure>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="container">
+        <h2 class="section-title">What we found</h2>
+        <ul class="findings">{findings.map((f) => <li>{f}</li>)}</ul>
+        <p class="sub-title">Where this goes next</p>
+        <p>AI-driven IoT anomaly detection, automated network segmentation, and testing the design against a real-world enterprise deployment.</p>
+        <p class="end-links">
+          <a href="/#projects">← Back to all projects</a>
+          <a href={`mailto:${profile.email}`}>Ask me about this project →</a>
+        </p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="container footer">
+    <p class="muted">© {new Date().getFullYear()} {profile.name}</p>
+  </footer>
+</Base>
+
+<style>
+  .hero-wrap {
+    position: relative;
+    overflow: hidden;
+  }
+  .hero {
+    position: relative;
+    padding-top: 3rem;
+    padding-bottom: 3.5rem;
+  }
+  .back {
+    display: inline-block;
+    font-size: 0.9rem;
+    margin-bottom: 2rem;
+  }
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 0.85rem;
+    color: var(--accent);
+    margin-bottom: 0.9rem;
+  }
+  h1 {
+    font-size: clamp(2rem, 5vw, 2.75rem);
+    letter-spacing: -0.02em;
+    margin-bottom: 1.25rem;
+  }
+  .lead {
+    font-size: 1.15rem;
+    color: var(--muted);
+    margin-bottom: 2rem;
+  }
+  .facts {
+    display: grid;
+    gap: 0.6rem;
+    margin: 0 0 1.75rem;
+    padding: 1.1rem 1.25rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: color-mix(in srgb, var(--surface) 85%, transparent);
+  }
+  .facts div {
+    display: grid;
+    grid-template-columns: 5rem 1fr;
+    gap: 1rem;
+    font-size: 0.93rem;
+  }
+  .facts dt {
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    padding-top: 0.15rem;
+  }
+  .facts dd {
+    margin: 0;
+  }
+  .links,
+  .end-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.25rem;
+    font-size: 0.95rem;
+  }
+  .end-links {
+    margin-top: 2rem;
+    justify-content: space-between;
+  }
+
+  figure {
+    margin: 0;
+  }
+  figure img {
+    display: block;
+    width: 100%;
+    height: auto;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+  }
+  figcaption {
+    font-size: 0.85rem;
+    color: var(--muted);
+    margin-top: 0.6rem;
+  }
+  .duo {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 1.25rem;
+    align-items: start;
+  }
+  .duo.even {
+    grid-template-columns: 1fr 1fr;
+    margin-top: 1.5rem;
+  }
+  .wide-fig {
+    margin-top: 1.75rem;
+  }
+
+  .sub-title {
+    font-weight: 600;
+    margin: 1.75rem 0 0.75rem;
+  }
+  .chain {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  .chain li {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.4rem 0.85rem 0.4rem 0.45rem;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: var(--surface);
+    font-size: 0.9rem;
+  }
+  .chain span {
+    display: grid;
+    place-items: center;
+    width: 1.5rem;
+    height: 1.5rem;
+    border-radius: 50%;
+    background: var(--accent-soft);
+    color: var(--accent);
+    font-family: var(--mono);
+    font-size: 0.75rem;
+  }
+
+  .table-wrap {
+    overflow-x: auto;
+    margin-top: 1.25rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.92rem;
+    background: var(--surface);
+  }
+  th,
+  td {
+    text-align: left;
+    padding: 0.65rem 0.9rem;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  tr:last-child td {
+    border-bottom: 0;
+  }
+  th {
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+  }
+  td:first-child {
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .mono {
+    font-family: var(--mono);
+    font-size: 0.85rem;
+    white-space: nowrap;
+  }
+
+  .continuum {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+  }
+  .continuum article {
+    padding: 1.35rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+  }
+  .phase {
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--accent);
+    margin-bottom: 0.4rem;
+  }
+  .continuum h3 {
+    font-size: 1.05rem;
+    margin-bottom: 0.75rem;
+  }
+  .continuum ul,
+  .findings {
+    padding-left: 1.1rem;
+    font-size: 0.95rem;
+  }
+  .continuum li,
+  .findings li {
+    margin-bottom: 0.4rem;
+  }
+  .continuum li::marker,
+  .findings li::marker {
+    color: var(--accent);
+  }
+
+  code {
+    font-family: var(--mono);
+    font-size: 0.85em;
+    padding: 0.1rem 0.35rem;
+    border-radius: 4px;
+    background: var(--accent-soft);
+    color: var(--accent);
+  }
+
+  .footer {
+    padding-top: 2rem;
+    padding-bottom: 3rem;
+    border-top: 1px solid var(--border);
+    font-size: 0.85rem;
+  }
+
+  @media (max-width: 760px) {
+    .duo,
+    .duo.even,
+    .continuum {
+      grid-template-columns: 1fr;
+    }
+    .facts div {
+      grid-template-columns: 1fr;
+      gap: 0.1rem;
+    }
+  }
+</style>

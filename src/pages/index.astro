@@ -1,0 +1,518 @@
+---
+import Base from '../layouts/Base.astro';
+import Header from '../components/Header.astro';
+import NetworkDiagram from '../components/NetworkDiagram.astro';
+import TopologyBackdrop from '../components/TopologyBackdrop.astro';
+import {
+  profile,
+  highlights,
+  experience,
+  projects,
+  skills,
+  certifications,
+  education,
+  speaking,
+} from '../data/site';
+
+const year = new Date().getFullYear();
+---
+
+<Base>
+  <Header />
+  <main id="main">
+    <!-- Hero -->
+    <div class="hero-wrap">
+    <TopologyBackdrop variant="hero" seed={7} />
+    <div id="top" class="container hero">
+      <p class="eyebrow">{profile.role} · {profile.location}</p>
+      <h1>Hi, I'm {profile.name.split(' ')[0]}.</h1>
+      <p class="lead">{profile.tagline}</p>
+      <div class="actions">
+        <a class="btn primary" href={profile.resume} target="_blank" rel="noopener">Download résumé</a>
+        <a class="btn" href={`mailto:${profile.email}`}>Get in touch</a>
+      </div>
+      <ul class="social" aria-label="Profiles">
+        <li><a href={profile.links.github} target="_blank" rel="noopener">GitHub ↗</a></li>
+        <li><a href={profile.links.linkedin} target="_blank" rel="noopener">LinkedIn ↗</a></li>
+      </ul>
+    </div>
+    </div>
+
+    <!-- About -->
+    <section id="about">
+      <div class="container">
+        <h2 class="section-title">About</h2>
+        {profile.summary.map((p) => <p>{p}</p>)}
+        <ul class="stats">
+          {highlights.map((h) => (
+            <li>
+              <span class="stat-value">{h.value}</span>
+              <span class="stat-label">{h.label}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </section>
+
+    <!-- Interactive network -->
+    <section id="network">
+      <div class="container wide">
+        <h2 class="section-title">How I build networks</h2>
+        <p class="section-lead">A reference architecture built from the work I've done: cloud, on-prem, and branch sites tied together by identity. Explore it to see the skills behind each piece.</p>
+        <NetworkDiagram />
+      </div>
+    </section>
+
+    <!-- Experience -->
+    <section id="experience">
+      <div class="container">
+        <h2 class="section-title">Experience</h2>
+        <ol class="timeline">
+          {experience.map((job) => (
+            <li class="job">
+              <div class="job-head">
+                <h3>{job.role} <span class="at">· {job.company}</span></h3>
+                <span class="meta">{job.period}</span>
+              </div>
+              <p class="meta">{job.location}</p>
+              <ul class="points">
+                {job.points.map((pt) => <li>{pt}</li>)}
+              </ul>
+            </li>
+          ))}
+        </ol>
+      </div>
+    </section>
+
+    <!-- Projects -->
+    <section id="projects">
+      <div class="container">
+        <h2 class="section-title">Selected projects</h2>
+        <div class="projects">
+          {projects.map((p) => (
+            <article class="card">
+              <h3>{p.title}</h3>
+              {p.context && <p class="meta">{p.context}</p>}
+              <p>{p.description}</p>
+              <ul class="tags">
+                {p.tags.map((t) => <li class="tag">{t}</li>)}
+              </ul>
+              {p.links && (
+                <div class="card-links">
+                  {p.links.map((l) =>
+                    l.href.startsWith('/') ? (
+                      <a href={l.href} class="internal">{l.label} →</a>
+                    ) : (
+                      <a href={l.href} target="_blank" rel="noopener">{l.label} ↗</a>
+                    ),
+                  )}
+                </div>
+              )}
+            </article>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <!-- Skills -->
+    <section id="skills">
+      <div class="container">
+        <h2 class="section-title">Skills</h2>
+        <dl class="skills">
+          {skills.map((s) => (
+            <div class="skill-row">
+              <dt>{s.group}</dt>
+              <dd>{s.items.join(' · ')}</dd>
+            </div>
+          ))}
+        </dl>
+      </div>
+    </section>
+
+    <!-- Certifications & Education -->
+    <section id="credentials">
+      <div class="container two-col">
+        <div>
+          <h2 class="section-title">Certifications</h2>
+          <ul class="list">
+            {certifications.map((c) => (
+              <li>
+                {c.href ? (
+                  <a class="cert-link" href={c.href} target="_blank" rel="noopener" title="Verify on Credly">{c.name} <span class="verify">Verify ↗</span></a>
+                ) : (
+                  <span>{c.name}</span>
+                )}
+                {c.date && <span class={`meta ${c.date === 'In progress' ? 'progress' : ''}`}>{c.date}</span>}
+              </li>
+            ))}
+          </ul>
+        </div>
+        <div>
+          <h2 class="section-title">Education</h2>
+          <ul class="list edu">
+            {education.map((e) => (
+              <li>
+                <div>
+                  <strong>{e.school}</strong>
+                  <div>{e.degree}</div>
+                  {e.notes.length > 0 && <div class="meta">{e.notes.join(' · ')}</div>}
+                </div>
+                <span class="meta">{e.period}</span>
+              </li>
+            ))}
+          </ul>
+          <h2 class="section-title speaking-title">Speaking</h2>
+          <ul class="list edu">
+            {speaking.map((s) => (
+              <li>
+                <div>
+                  <strong>{s.href ? <a href={s.href}>{s.title} →</a> : s.title}</strong>
+                  <div class="meta">{s.venue}, {s.place}</div>
+                </div>
+                <span class="meta">{s.date}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- Contact -->
+    <section id="contact" class="contact-wrap">
+      <TopologyBackdrop variant="subtle" seed={21} />
+      <div class="container contact">
+        <h2 class="section-title">Contact</h2>
+        <p class="contact-lead">Open to network security, cloud security, and infrastructure roles. The fastest way to reach me is email.</p>
+        <a class="email" href={`mailto:${profile.email}`}>{profile.email}</a>
+        <ul class="social">
+          <li><a href={profile.links.github} target="_blank" rel="noopener">GitHub ↗</a></li>
+          <li><a href={profile.links.linkedin} target="_blank" rel="noopener">LinkedIn ↗</a></li>
+          <li><a href={profile.resume} target="_blank" rel="noopener">Résumé (PDF) ↗</a></li>
+        </ul>
+      </div>
+    </section>
+  </main>
+
+  <footer class="container footer">
+    <p class="muted">© {year} {profile.name} · Built with Astro</p>
+  </footer>
+</Base>
+
+<style>
+  /* Hero */
+  .hero-wrap {
+    position: relative;
+    overflow: hidden;
+  }
+  .hero-wrap .hero,
+  .contact-wrap .contact {
+    position: relative;
+    z-index: 1;
+  }
+  .contact-wrap {
+    position: relative;
+    overflow: hidden;
+    padding-bottom: 5rem;
+  }
+  .cert-link {
+    color: var(--text);
+  }
+  .cert-link:hover {
+    color: var(--accent);
+  }
+  .verify {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    color: var(--accent);
+    white-space: nowrap;
+    margin-left: 0.25rem;
+  }
+  .card-links .internal {
+    font-weight: 600;
+  }
+  .hero {
+    padding-top: 6rem;
+    padding-bottom: 4rem;
+  }
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 0.85rem;
+    color: var(--accent);
+    margin-bottom: 1rem;
+  }
+  h1 {
+    font-size: clamp(2.25rem, 6vw, 3.25rem);
+    letter-spacing: -0.02em;
+    margin-bottom: 1.25rem;
+  }
+  .lead {
+    font-size: 1.2rem;
+    color: var(--muted);
+    max-width: 38rem;
+    margin-bottom: 2rem;
+  }
+  .actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+  }
+  .btn {
+    display: inline-block;
+    padding: 0.6rem 1.15rem;
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    font-size: 0.95rem;
+    font-weight: 500;
+    transition: border-color 0.15s, transform 0.15s;
+  }
+  .btn:hover {
+    text-decoration: none;
+    border-color: var(--muted);
+    transform: translateY(-1px);
+  }
+  .btn.primary {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+  }
+  :global([data-theme='dark']) .btn.primary {
+    color: #0b1020;
+  }
+  .social {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.25rem;
+    list-style: none;
+    font-size: 0.95rem;
+  }
+
+  /* About */
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    list-style: none;
+    margin-top: 2rem;
+  }
+  .stats li {
+    padding: 1rem 1.1rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+  }
+  .stat-value {
+    display: block;
+    font-size: 1.6rem;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+  }
+  .stat-label {
+    font-size: 0.85rem;
+    color: var(--muted);
+  }
+
+  /* Experience */
+  .timeline {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    border-left: 2px solid var(--border);
+  }
+  .job {
+    position: relative;
+    padding: 0 0 2.25rem 1.5rem;
+  }
+  .job:last-child {
+    padding-bottom: 0;
+  }
+  .job::before {
+    content: '';
+    position: absolute;
+    left: -7px;
+    top: 0.45rem;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--bg);
+    border: 2px solid var(--accent);
+  }
+  .job-head {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 0.25rem 1rem;
+  }
+  .job h3 {
+    font-size: 1.05rem;
+  }
+  .at {
+    font-weight: 400;
+    color: var(--muted);
+  }
+  .meta {
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    color: var(--muted);
+    margin: 0.15rem 0 0;
+  }
+  .points {
+    margin-top: 0.75rem;
+    padding-left: 1.1rem;
+  }
+  .points li {
+    margin-bottom: 0.35rem;
+  }
+  .points li::marker {
+    color: var(--muted);
+  }
+
+  /* Projects */
+  .projects {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 1rem;
+  }
+  .card {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    padding: 1.35rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    transition: border-color 0.15s, transform 0.15s;
+  }
+  .card:hover {
+    border-color: var(--muted);
+    transform: translateY(-2px);
+  }
+  .card h3 {
+    font-size: 1.05rem;
+  }
+  .card p {
+    margin: 0;
+    font-size: 0.95rem;
+  }
+  .card .meta {
+    margin-top: -0.4rem;
+  }
+  .tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    list-style: none;
+    margin-top: auto;
+    padding-top: 0.4rem;
+  }
+  .card-links {
+    display: flex;
+    gap: 1rem;
+    font-size: 0.9rem;
+  }
+
+  /* Skills */
+  .skills {
+    margin: 0;
+  }
+  .skill-row {
+    display: grid;
+    grid-template-columns: 12rem 1fr;
+    gap: 1rem;
+    padding: 0.9rem 0;
+    border-bottom: 1px dashed var(--border);
+  }
+  .skill-row:first-child {
+    padding-top: 0;
+  }
+  .skill-row:last-child {
+    border-bottom: 0;
+  }
+  dt {
+    font-weight: 600;
+    font-size: 0.95rem;
+  }
+  dd {
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.95rem;
+  }
+
+  /* Credentials */
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 3rem;
+  }
+  .list {
+    list-style: none;
+  }
+  .list li {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 1rem;
+    padding: 0.6rem 0;
+    border-bottom: 1px dashed var(--border);
+    font-size: 0.95rem;
+  }
+  .list li:last-child {
+    border-bottom: 0;
+  }
+  .list .meta {
+    white-space: nowrap;
+    margin: 0;
+  }
+  .edu li > div .meta {
+    white-space: normal;
+  }
+  .progress {
+    color: var(--accent);
+  }
+  .speaking-title {
+    margin-top: 2.5rem;
+  }
+
+  /* Contact */
+  .contact-lead {
+    font-size: 1.1rem;
+    max-width: 34rem;
+  }
+  .email {
+    display: inline-block;
+    font-size: clamp(1.2rem, 4vw, 1.6rem);
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+    word-break: break-all;
+  }
+
+  .footer {
+    padding-top: 2rem;
+    padding-bottom: 3rem;
+    border-top: 1px solid var(--border);
+    font-size: 0.85rem;
+  }
+
+  @media (max-width: 680px) {
+    .hero {
+      padding-top: 3.5rem;
+    }
+    .stats {
+      grid-template-columns: 1fr;
+    }
+    .skill-row {
+      grid-template-columns: 1fr;
+      gap: 0.25rem;
+    }
+    .two-col {
+      grid-template-columns: 1fr;
+      gap: 2.5rem;
+    }
+    .projects {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

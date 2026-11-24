@@ -1,0 +1,11 @@
+// Cloudflare deploy config (Workers static assets).
+// "name" matches the existing site at portfolio.viktohtimmy.workers.dev,
+// so deploying REPLACES that site. Change the name to deploy alongside it instead.
+{
+  "name": "portfolio",
+  "compatibility_date": "2026-11-24",
+  "assets": {
+    "directory": "./dist",
+    "not_found_handling": "404-page"
+  }
+}
