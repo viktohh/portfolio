@@ -35,7 +35,7 @@ export type Job = {
 export const experience: Job[] = [
   {
     company: 'SpatialNode',
-    role: 'Co-Founder & Chief Technology Officer',
+    role: 'Chief Technology Officer',
     location: 'Remote',
     period: 'Jan 2026 — Present',
     points: [
